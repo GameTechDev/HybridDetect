@@ -104,7 +104,7 @@ VOID TaskScheduler::Init(PROCESSOR_INFO& procInfo, CoreTypes coreType, int threa
     if(thread_count == MAX_THREADS)
     {
           // Leave one core for the main thread.
-        miThreadCount = procInfo.cpuSets[coreType].size();
+        miThreadCount = procInfo.GetCoreTypeCount(coreType);
     }
     else
     {
@@ -139,9 +139,15 @@ VOID TaskScheduler::Init(PROCESSOR_INFO& procInfo, CoreTypes coreType, int threa
 			break;
 		}
 
+
 		mpThreadData[uThread] = CreateThread(0, 0, TaskScheduler::ThreadMain, this, 0, 0);
 		SetThreadName(GetThreadId(mpThreadData[uThread]), buffer);
+
+#ifdef ENABLE_CPU_SETS
         RunOn(procInfo, mpThreadData[uThread], coreType, procInfo.cpuSets[CoreTypes::ANY]);
+#else
+        RunOn(procInfo, mpThreadData[uThread], coreType, procInfo.coreMasks[CoreTypes::ANY]);
+#endif
     }
 }
  

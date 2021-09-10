@@ -272,7 +272,11 @@ int main(int argc, char** argv)
 
     gProcessorInfo = &procInfo;
 
+#ifdef ENABLE_CPU_SETS
     RunOn(procInfo, CoreTypes::INTEL_CORE, procInfo.cpuSets[CoreTypes::ANY]);
+#else
+    RunOn(procInfo, CoreTypes::INTEL_CORE, procInfo.coreMasks[CoreTypes::ANY]);
+#endif
 
     // Must be done before any windowing-system-like things or else virtualization will kick in
     auto dpi = SetupDPI();
@@ -406,7 +410,7 @@ int main(int argc, char** argv)
 
         if (procInfo.hybrid)
         {
-            gWorkloadD3D12 = new AsteroidsD3D12::Asteroids(&asteroids, &gGUI, procInfo.cpuSets[INTEL_CORE].size(), procInfo.cpuSets[INTEL_ATOM].size(), adapter, procInfo, gSettings);
+            gWorkloadD3D12 = new AsteroidsD3D12::Asteroids(&asteroids, &gGUI, procInfo.GetCoreTypeCount(INTEL_CORE), procInfo.GetCoreTypeCount(INTEL_ATOM), adapter, procInfo, gSettings);
         }
         else
         {
@@ -555,9 +559,9 @@ int main(int argc, char** argv)
 			if (gProcessorInfo->hybrid)
 			{
 #ifdef ENABLE_CPU_SETS
-				sprintf(buffer, "Core/Atom Processors: %d/%d", (int)gProcessorInfo->cpuSets[INTEL_CORE].size(), (int)gProcessorInfo->cpuSets[INTEL_ATOM].size());
+				sprintf(buffer, "Core/Atom Processors: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
 #else
-				sprintf(buffer, "Core/Atom: %d/%d", (int)gProcessorInfo->coreMasks[INTEL_CORE].size(), (int)gProcessorInfo->coreMasks[INTEL_ATOM].size());
+				sprintf(buffer, "Core/Atom: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
 #endif
 				gHybridCoresControl->Text(buffer);
 			}

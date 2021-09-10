@@ -45,7 +45,7 @@
 #define ENABLE_HYBRID_DETECT
 
 // Tells the application to treat the target system as a heterogeneous software proxy.
-//#define ENABLE_SOFTWARE_PROXY	
+#define ENABLE_SOFTWARE_PROXY	
 
 // Enables/Disables Run On API
 #define ENABLE_RUNON
@@ -54,10 +54,10 @@
 //#define ENABLE_RUNON_PRIORITY
 
 // Enables/Disables SetThreadInformation Memory Priority Based on Core-Type
-#define ENABLE_RUNON_MEMORY_PRIORITY
+//#define ENABLE_RUNON_MEMORY_PRIORITY
 
 // Enables/Disables SetThreadInformation Execution Speed based on Core-Type
-#define ENABLE_RUNON_EXECUTION_SPEED
+//#define ENABLE_RUNON_EXECUTION_SPEED
 
 // Enables CPU-Sets and Disables ThreadAffinityMasks
 #define ENABLE_CPU_SETS
@@ -219,6 +219,18 @@ typedef struct _PROCESSOR_INFO
 	unsigned							osBuildNumber;
 	const bool IsIntel()    const { return !strcmp("GenuineIntel", vendorID); }
 	const bool IsAMD()      const { return !strcmp("AuthenticAMD", vendorID); }
+
+	inline int GetCoreTypeCount(CoreTypes coreType)
+	{
+#ifdef ENABLE_CPU_SETS
+		return cpuSets[coreType].size();
+#else
+		std::bitset<64> bits = coreMasks[coreType];
+
+		return bits.count();
+#endif
+	}
+
 } PROCESSOR_INFO, * PPROCESSOR_INFO;
 
 // Type to String Conversion Helper Function
@@ -981,7 +993,7 @@ inline short RunOnOne(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const short
 		do {
 			// Surrender time-slice 
 			Sleep(0);
-			// Where Are We? [Purgatorio]
+			// Where Are We?
 			runningOn = GetCurrentProcessorNumber();
 			// Count Loop Iterations
 			iterations++;
@@ -989,7 +1001,7 @@ inline short RunOnOne(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const short
 		} while (runningOn != coreID);
 		// Assert In Debug
 		assert(runningOn == coreID);
-		//Where did we land? [Paradiso]
+		//Where did we land?
 		int finishedOn = GetCurrentProcessorNumber();
 
 		// Did we finish where we wanted?

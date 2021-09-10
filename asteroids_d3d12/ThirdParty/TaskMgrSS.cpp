@@ -174,11 +174,11 @@ BOOL TaskMgrSS::Init(PROCESSOR_INFO& procInfo)
     if (mProcInfo.hybrid)
 	{
         printf("%s\n\r", procInfo.brandString);
-        printf("Logical Cores %d(%d Core(s)/%d Atom(s))\n\r", procInfo.numLogicalCores, (int)procInfo.cpuSets[CoreTypes::INTEL_CORE].size(), (int)procInfo.cpuSets[CoreTypes::INTEL_ATOM].size());
+        printf("Logical Cores %d(%d Core(s)/%d Atom(s))\n\r", procInfo.numLogicalCores, (int)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE), (int)procInfo.GetCoreTypeCount(CoreTypes::INTEL_ATOM));
 #if CORE_ONLY
         // Reserve 1 thread for main thread
-        mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 1);
-        printf("Initialized Core-Only Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 1);
+        mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 1);
+        printf("Initialized Core-Only Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 1);
 #else
 #if RESERVE_ANY
         // Allocate 2 threads for 'any' threadpool
@@ -186,18 +186,18 @@ BOOL TaskMgrSS::Init(PROCESSOR_INFO& procInfo)
         printf("Initialized 'Any' Heterogeneous Threadpool (2 Threads)\n\r");
 
         // Reserve 1 thread for main thread & 1 thread for 'any' threadpool
-        mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 2);
-        printf("Initialized 'Core' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 2);
+        mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 2);
+        printf("Initialized 'Core' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 2);
 
         // Reserve 1 thread for 'any' threadpool
-        mAtomTaskScheduler.Init(procInfo, CoreTypes::INTEL_ATOM, (ULONG)procInfo.cpuSets[CoreTypes::INTEL_ATOM].size() - 1);
-        printf("Initialized 'Atom' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.cpuSets[CoreTypes::INTEL_ATOM].size() - 1);
+        mAtomTaskScheduler.Init(procInfo, CoreTypes::INTEL_ATOM, (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_ATOM) - 1);
+        printf("Initialized 'Atom' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_ATOM) - 1);
 #else
         // Reserve 1 thread for main thread
-		mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 1);
-        printf("Initialized 'Core' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.cpuSets[CoreTypes::INTEL_CORE].size() - 1);
-		mAtomTaskScheduler.Init(procInfo, CoreTypes::INTEL_ATOM, (ULONG)procInfo.cpuSets[CoreTypes::INTEL_ATOM].size());
-        printf("Initialized 'Atom' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.cpuSets[CoreTypes::INTEL_ATOM].size());
+		mCoreTaskScheduler.Init(procInfo, CoreTypes::INTEL_CORE, (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 1);
+        printf("Initialized 'Core' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_CORE) - 1);
+		mAtomTaskScheduler.Init(procInfo, CoreTypes::INTEL_ATOM, (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_ATOM));
+        printf("Initialized 'Atom' Heterogeneous Threadpool (%d Threads)\n\r", (ULONG)procInfo.GetCoreTypeCount(CoreTypes::INTEL_ATOM));
 #endif
 #endif
     }
