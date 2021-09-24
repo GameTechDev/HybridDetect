@@ -45,7 +45,7 @@
 #define ENABLE_HYBRID_DETECT
 
 // Tells the application to treat the target system as a heterogeneous software proxy.
-#define ENABLE_SOFTWARE_PROXY	
+//#define ENABLE_SOFTWARE_PROXY	
 
 // Enables/Disables Run On API
 #define ENABLE_RUNON
@@ -349,18 +349,18 @@ inline bool IsHybridOSEx()
 
 	versionInfo.dwMajorVersion = 10;
 	versionInfo.dwMinorVersion = 0;
-	versionInfo.dwBuildNumber = 21996;
-	versionInfo.wServicePackMajor = 0;
-	versionInfo.wServicePackMinor = 0;
+	versionInfo.dwBuildNumber = 22000;
+	//versionInfo.wServicePackMajor = 0;
+	//versionInfo.wServicePackMinor = 0;
 
 	VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, operation);
 	VER_SET_CONDITION(conditionMask, VER_MINORVERSION, operation);
 	VER_SET_CONDITION(conditionMask, VER_BUILDNUMBER, operation);
-	VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMAJOR, operation);
-	VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMINOR, operation);
+	//VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMAJOR, operation);
+	//VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMINOR, operation);
 
 	return VerifyVersionInfo(&versionInfo,
-		VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER | VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR, conditionMask);
+		VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, conditionMask);
 }
 
 // Calls CPUID & GetLogicalProcessors to fill in PROCESSOR_INFO Caches & Cores
@@ -780,6 +780,8 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 #endif
 				//pwrInfo.clear();
 			}
+
+			
 
 			// Reset Group Affinity
 			SetThreadGroupAffinity(GetCurrentThread(), &prevGroup, nullptr);

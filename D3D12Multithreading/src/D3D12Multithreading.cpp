@@ -799,7 +799,7 @@ void D3D12Multithreading::OnUpdate()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Vendor                  %s" ,&m_procInfo.vendorID[0]);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Is It Intel             %s", (m_procInfo.IsIntel() ? "Yes" : "No"));
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Is It Hybrid            %s", m_procInfo.hybrid ? "Yes" : "No");
-	ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Is Hybrid OS            %s", IsHybridOSEx() ? "Yes" : "No");
+	//ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Is Hybrid OS            %s", IsHybridOSEx() ? "Yes" : "No");
 #ifdef ENABLE_SOFTWARE_PROXY
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Software Proxy          %s", "Yes");
 #else
@@ -1074,8 +1074,8 @@ void D3D12Multithreading::OnUpdate()
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Allocated                   %s", core.allocated ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Allocated To Proc           %s", core.allocatedToTargetProcess ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Allocation Tag              %d", core.allocationTag);
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Effeciency Class            %d", core.allocationTag);
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Scheduling Class            %d", core.allocationTag);
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Effeciency Class            %d", core.efficiencyClass);
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Scheduling Class            %d", core.schedulingClass);
         ImGui::Separator();
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Frequency Information");
         ImGui::Separator();

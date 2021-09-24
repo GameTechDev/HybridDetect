@@ -58,7 +58,7 @@
 #include "spin_mutex.h"
 #include "TaskScheduler.h"
 
-#define RESERVE_ANY     1 // Hybrid Only, 1 reserves 2 'Any' threads
+#define RESERVE_ANY     0 // Hybrid Only, 1 reserves 2 'Any' threads
 #define CORE_ONLY       0 // Hybrid Only, Run all Tasks in 'Core' threads.
 
 /*! The TaskMgrSS allows the user to schedule tasksets All TaskMgrSS 
