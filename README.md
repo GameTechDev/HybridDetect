@@ -1,10 +1,10 @@
 # Hybrid Detect
 
-Hybrid Detect demonstrates CPU topology detection using multiple instrisic and OS level APIs. Firstly, we demonstrate usage of CPUID intrinc to detect information leafs including the new Hybrid leaf offered for the latest Intel processors. Additionaly, we use GetLogicalProcessorInformation() and GetLogicalProcessorInformationEX() to demonstrate full topology enumeration including Logical Core & Cache Relationships along with Affinity Masking. Finally we show how to use GetSystemCPUSetInformation() to get valid CPU Identifiers for use with SetThreadSelectedCPUSets() as well as how to read the Efficiency Class and other flags such as the Parked flag for each P-Core & E-Core.
+Hybrid Detect demonstrates CPU topology detection using multiple intrinsic and OS level APIs. First, we demonstrate usage of CPUID intrinsic to detect information leafs including the new Hybrid leaf offered for the latest Intel processors. Additionally, we use GetLogicalProcessorInformation() and GetLogicalProcessorInformationEX() to demonstrate full topology enumeration including Logical Core & Cache Relationships along with Affinity Masking. Finally we show how to use GetSystemCPUSetInformation() to get valid CPU Identifiers for use with SetThreadSelectedCPUSets() as well as how to read the Efficiency Class and other flags such as the Parked flag for each P-Core & E-Core.
 
-In addition to topology detection several sample functions are demonstrated which control affinitization strategies for threads, these include weak affinity functions like, SetThreadIdealProcessor, SetThreadPriority, and SetThreadInformation, as well as strong affinity functions like SetThreadSelectedCPUSets and SetThreadAffinityMask.
+In addition to topology detection several sample functions are demonstrated which control affinitization strategies for threads; these include weak affinity functions such as: SetThreadIdealProcessor, SetThreadPriority, and SetThreadInformation, as well as strong affinity functions like SetThreadSelectedCPUSets and SetThreadAffinityMask.
 
-HybridDetect.h is the primary source module for all Hybrid Detect functionality and requires no additional dependecies for integration into your project. 
+HybridDetect.h is the primary source module for all Hybrid Detect functionality and requires no additional dependencies for integration into your project. 
 
 # Projects in Solution
 
