@@ -65,7 +65,7 @@ For P-Core Only threadpool, use the following pre-compiler flags:
 	#define RESERVE_ANY     0 // Hybrid Only, 1 reserves 2 'Any' threads affinitized to P-Cores & E-Cores
 	#define CORE_ONLY       1 // Hybrid Only, Run all Tasks in 'Core' threads.
 
-To demonstrate an alternative threadpool topology that reserves two threads that exucute on P-Cores and E-Cores: 
+To demonstrate an alternative threadpool topology that reserves two threads that execute on P-Cores and E-Cores: 
 
 	#define RESERVE_ANY     1 // Hybrid Only, 1 reserves 2 'Any' threads affinitized to P-Cores & E-Cores
 	#define CORE_ONLY       0 // Hybrid Only, Run all Tasks in 'Core' threads.
