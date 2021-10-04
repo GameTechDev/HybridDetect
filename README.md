@@ -2,7 +2,7 @@
 
 Hybrid Detect demonstrates CPU topology detection using multiple intrinsic and OS level APIs. First, we demonstrate usage of CPUID intrinsic to detect information leafs including the new Hybrid leaf offered for the latest Intel processors. Additionally, we use GetLogicalProcessorInformation() and GetLogicalProcessorInformationEX() to demonstrate full topology enumeration including Logical Core & Cache Relationships along with Affinity Masking. Finally we show how to use GetSystemCPUSetInformation() to get valid CPU Identifiers for use with SetThreadSelectedCPUSets() as well as how to read the Efficiency Class and other flags such as the Parked flag for each P-Core & E-Core.
 
-In addition to topology detection several sample functions are demonstrated which control affinitization strategies for threads; these include weak affinity functions such as: SetThreadIdealProcessor, SetThreadPriority, and SetThreadInformation, as well as strong affinity functions like SetThreadSelectedCPUSets and SetThreadAffinityMask.
+In addition to topology detection several sample functions are demonstrated which control affinitization strategies for threads; these include weak affinity functions such as SetThreadIdealProcessor, SetThreadPriority, and SetThreadInformation, as well as strong affinity functions like SetThreadSelectedCPUSets and SetThreadAffinityMask.
 
 HybridDetect.h is the primary source module for all Hybrid Detect functionality and requires no additional dependencies for integration into your project. 
 
@@ -41,7 +41,7 @@ Demonstrates logical processor and cache topology enumeration using HybridDetect
 
 ## asteroids_d3d12
 
-Demonstrates a variety of task scheduling scenarios with a simple task schedule using pre-compiler flags. Demonstrates split topology threadpools, as well as homgeneous/heterogeneous threadpool adaption. Rendering is done via the critical P-Cores and asteroid simulation is performed using E-Cores. Render/Update tasks can composed into multiple task-dependency relationships, including SingleThreaded, NoDependency, OneToOne, Batched, and Asymetric.
+Demonstrates a variety of task scheduling scenarios with a simple task schedule using pre-compiler flags. Demonstrates split topology threadpools, as well as homogeneous/heterogeneous threadpool adaption. Rendering is done via the critical P-Cores and asteroid simulation is performed using E-Cores. Render/Update tasks can be composed into multiple task-dependency relationships, including SingleThreaded, NoDependency, OneToOne, Batched, and Asymmetric.
 
 ### asteroids_d3d12 Command Line Arguments
 
@@ -55,17 +55,17 @@ Demonstrates a variety of task scheduling scenarios with a simple task schedule 
 
 ### asteroids_d3d12 Logical Threadpool Pre-Compiler
 
-For Default Split-Topology Threadpool Use the Following Pre-compiler flags 
+For Default Split-Topology threadpool, use the following pre-compiler flags: 
 
 	#define RESERVE_ANY     0 // Hybrid Only, 1 reserves 2 'Any' threads affinitized to P-Cores & E-Cores
 	#define CORE_ONLY       0 // Hybrid Only, Run all Tasks in 'Core' threads.
 
-For P-Core Only Threadpool Use the Following Pre-compiler flags 
+For P-Core Only threadpool, use the following pre-compiler flags: 
 
 	#define RESERVE_ANY     0 // Hybrid Only, 1 reserves 2 'Any' threads affinitized to P-Cores & E-Cores
 	#define CORE_ONLY       1 // Hybrid Only, Run all Tasks in 'Core' threads.
 
-To Demonstrate an Alternative Threadpool Topology That Reserves Two Threads that exucute on P-Cores and E-Cores 
+To demonstrate an alternative threadpool topology that reserves two threads that exucute on P-Cores and E-Cores: 
 
 	#define RESERVE_ANY     1 // Hybrid Only, 1 reserves 2 'Any' threads affinitized to P-Cores & E-Cores
 	#define CORE_ONLY       0 // Hybrid Only, Run all Tasks in 'Core' threads.
