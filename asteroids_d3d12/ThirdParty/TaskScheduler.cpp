@@ -126,10 +126,10 @@ VOID TaskScheduler::Init(PROCESSOR_INFO& procInfo, CoreTypes coreType, int threa
 		switch (coreType)
 		{
 		case INTEL_ATOM:
-			sprintf(buffer, "Atom Thread %d", uThread);
+			sprintf(buffer, "E-Core Thread %d", uThread);
 			break;
 		case INTEL_CORE:
-			sprintf(buffer, "Core Thread %d", uThread);
+			sprintf(buffer, "P-Core Thread %d", uThread);
 			break;
 		case ANY:
 			sprintf(buffer, "Any Thread %d", uThread);

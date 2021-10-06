@@ -559,9 +559,9 @@ int main(int argc, char** argv)
 			if (gProcessorInfo->hybrid)
 			{
 #ifdef ENABLE_CPU_SETS
-				sprintf(buffer, "Core/Atom Processors: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
+				sprintf(buffer, "P-Core/E-Core: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
 #else
-				sprintf(buffer, "Core/Atom: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
+				sprintf(buffer, "P-Core/E-Core: %d/%d", (int)gProcessorInfo->GetCoreTypeCount(INTEL_CORE), (int)gProcessorInfo->GetCoreTypeCount(INTEL_ATOM));
 #endif
 				gHybridCoresControl->Text(buffer);
 			}

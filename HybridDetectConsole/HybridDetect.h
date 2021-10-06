@@ -243,11 +243,11 @@ inline const char* CoreTypeString(CoreTypes type)
 	case CoreTypes::RESERVED0:
 		return "Reserved_0";
 	case CoreTypes::INTEL_ATOM:
-		return "Atom";
+		return "E-Core";
 	case CoreTypes::RESERVED1:
 		return "Reserved_1";
 	case CoreTypes::INTEL_CORE:
-		return "Core";
+		return "P-Core";
 	}
 	return "Any";
 }

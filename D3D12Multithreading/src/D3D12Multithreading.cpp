@@ -594,7 +594,6 @@ void D3D12Multithreading::LoadAssets()
         m_device->CreateSampler(&clampSamplerDesc, samplerHandle);
     }
 
-	// Let there be light
 	RunOn(m_procInfo, CoreTypes::INTEL_ATOM);
     for (int i = 0; i < NumLights; i++)
     {
@@ -872,7 +871,7 @@ void D3D12Multithreading::OnUpdate()
     {
         static int selectedSet = 0;
         static int coreTypes[] = { ANY, NONE, RESERVED0, INTEL_ATOM, RESERVED1, INTEL_CORE };
-        char* items[6] = { "Any", "None", "Reserved 0", "Atom", "Reserved 1", "Core" };
+        char* items[6] = { "Any", "None", "Reserved 0", "E-Core", "Reserved 1", "P-Core" };
 
         UpdateProcessorInfo(m_procInfo);
 
@@ -1000,8 +999,8 @@ void D3D12Multithreading::OnUpdate()
         ImGui::Separator();
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "None        | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::NONE]).to_string().c_str());
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Any         | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::ANY]).to_string().c_str());
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Core        | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::INTEL_CORE]).to_string().c_str());
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Atom        | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::INTEL_ATOM]).to_string().c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "P-Core      | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::INTEL_CORE]).to_string().c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "E-Core      | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::INTEL_ATOM]).to_string().c_str());
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Reserved 0  | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::RESERVED0]).to_string().c_str());
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Reserved 1  | %s", std::bitset<64>(m_procInfo.coreMasks[CoreTypes::RESERVED1]).to_string().c_str());
         ImGui::Separator();
