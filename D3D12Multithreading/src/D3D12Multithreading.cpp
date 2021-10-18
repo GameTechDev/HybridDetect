@@ -1096,7 +1096,7 @@ void D3D12Multithreading::OnUpdate()
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "SSE                         %s", core.SSE                  ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX                         %s", core.AVX                  ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX2                        %s", core.AVX2                 ? "Yes" : "No");
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX512                      %s", core.AVX2                 ? "Yes" : "No");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX512                      %s", core.AVX512               ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX512F                     %s", core.AVX512F              ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX512DQ                    %s", core.AVX512DQ             ? "Yes" : "No");
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "AVX512PF                    %s", core.AVX512PF             ? "Yes" : "No");
