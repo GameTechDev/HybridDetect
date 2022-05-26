@@ -368,29 +368,28 @@ inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 {
 #ifdef ENABLE_HYBRID_DETECT
 #ifdef ENABLE_CPU_SETS
-	unsigned long size;
+	unsigned long bufferSize;
 	// Get the Current Process Handle.
 	HANDLE curProc = GetCurrentProcess();
 
 	// Get total number (size) of elements in the data structure.
-	GetSystemCpuSetInformation(nullptr, 0, &size, curProc, 0);
+	GetSystemCpuSetInformation(nullptr, 0, &bufferSize, curProc, 0);
 
 	// Allocate data structures based on size returned from first call.
-	std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
-	PSYSTEM_CPU_SET_INFORMATION cpuSets = reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.get());
-	PSYSTEM_CPU_SET_INFORMATION nextCPUSet;
+	auto buffer = std::make_unique<uint8_t[]>(bufferSize);
 
 	// Get all of the CPUSet elements 
-	GetSystemCpuSetInformation(cpuSets, size, &size, curProc, 0);
-
-	nextCPUSet = cpuSets;
-
-	// Iterate through each logical processor.
-	for (DWORD offset = 0;
-		offset + sizeof(SYSTEM_CPU_SET_INFORMATION) <= size;
-		offset += sizeof(SYSTEM_CPU_SET_INFORMATION), nextCPUSet++)
+	if(!GetSystemCpuSetInformation(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.get()), bufferSize, &bufferSize, curProc, 0))
 	{
-		// Make sure CPU Set Type is valid. 
+		return false;
+	}
+
+	uint8_t* cpuSetPtr = buffer.get();
+
+	for (ULONG cpuSetSize = 0; cpuSetSize < bufferSize; )
+	{
+		auto nextCPUSet = reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(cpuSetPtr);
+
 		if (nextCPUSet->Type == CPU_SET_INFORMATION_TYPE::CpuSetInformation)
 		{
 			// Store Logical Processor Information for Later Use.
@@ -413,6 +412,10 @@ inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 			// Bin logical processors based on efficiency class here
 			// ...
 		}
+
+		cpuSetPtr += nextCPUSet->Size;
+		cpuSetSize += nextCPUSet->Size;
+		
 	}
 
 	return true;
