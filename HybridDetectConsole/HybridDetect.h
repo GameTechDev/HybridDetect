@@ -511,6 +511,11 @@ inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 		procInfo.nodes.push_back(node);
 	}
 
+	for (EnumLogicalProcessorInformation enumInfo(RelationProcessorPackage);
+		auto pinfo = enumInfo.Current(); enumInfo.MoveNext()) {
+		++procInfo.numProcessorPackages;
+	}
+
 	for (EnumLogicalProcessorInformation enumInfo(RelationProcessorCore);
 		auto pinfo = enumInfo.Current(); enumInfo.MoveNext()) {
 		procInfo.numPhysicalCores++;
