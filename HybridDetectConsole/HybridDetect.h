@@ -15,30 +15,63 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <array>
 #include <vector>
-#include <intrin.h>
 #include <string>
-#include <windows.h>
-#include <malloc.h>    
 #include <stdio.h>
 #include <bitset>
 #include <map>
 #include <assert.h>
-#include <Powrprof.h>
 #include <thread>
+
+#ifdef _WIN32
+#define HYBRIDDETECT_OS_WIN
+#else
+#pragma message("Warning: " __FILE__ " not yet tested on non-Windows systems")
+#endif
+
+#ifdef HYBRIDDETECT_OS_WIN
+#include <windows.h>
+#include <Powrprof.h>
 #include <VersionHelpers.h>
+#include <intrin.h>
+#include <malloc.h>
 
 #pragma comment(lib, "Powrprof.lib")
+#else
+typedef unsigned long ULONG;
+typedef unsigned long long ULONG64;
+typedef size_t SIZE_T;
+typedef unsigned char BYTE;
+typedef void* HANDLE;
+#endif
+
+#ifndef HYBRID_DETECT_TRACE_ENABLED_VOLUME
+#define HYBRID_DETECT_TRACE_ENABLED_VOLUME 0 // Scale of 1-10, 10 being most verbose
+#endif
+#if HYBRID_DETECT_TRACE_ENABLED_VOLUME
+#define HYBRID_DETECT_TRACE(vol, fmt, ...) if (vol <= HYBRID_DETECT_TRACE_ENABLED_VOLUME){ \
+	printf("[%s][vol=%2d]: "##fmt##"\n", __FUNCTION__, vol, ##__VA_ARGS__); \
+	fflush(stdout); \
+}
+#else
+#define HYBRID_DETECT_TRACE(vol, fmt, ...)
+#endif
+
+namespace HybridDetect
+{
 
 #ifdef _WIN32
 // Simple wrapper for __cpuid intrinsic, created for cross platform support e.g. WIN32
 #define CPUID(registers, function) __cpuid((int*)registers, (int)function);
 #define CPUIDEX(registers, function, extFunction) __cpuidex((int*)registers, (int)function, (int)extFunction);
+#define XGETBV(xcrReg) _xgetbv(xcrReg)
 #else 
 // Linux Stuff
 #define CPUID(registers, function) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (0));
 #define CPUIDEX(registers, function, extFunction) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (extFunction));
+#define XGETBV(xcrReg) (0) // TODO
 #endif
 
 // Enables/Disables Hybrid Detect
@@ -48,7 +81,7 @@
 //#define ENABLE_SOFTWARE_PROXY	
 
 // Enables/Disables Run On API
-#define ENABLE_RUNON
+//#define ENABLE_RUNON
 
 // Enables/Disables ThreadPriority Based on Core-Type
 //#define ENABLE_RUNON_PRIORITY
@@ -61,6 +94,9 @@
 
 // Enables CPU-Sets and Disables ThreadAffinityMasks
 #define ENABLE_CPU_SETS
+
+// No current CPUs have ISA support that varies between cores
+//#define ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 
 // Simple conversion from an ordinal, n, to a set bit at position n
 #define IndexToMask(n)  (1UL << n)
@@ -95,7 +131,6 @@ enum CoreTypes
 	INTEL_ATOM = 0x20,
 	RESERVED1 = 0x30,
 	INTEL_CORE = 0x40,
-	MAX = 6
 };
 
 // Struct to store information for each Cache.
@@ -106,7 +141,7 @@ typedef struct _CACHE_INFO
 	unsigned							level = 0;
 	unsigned							size = 0;
 	unsigned							lineSize = 0;
-	unsigned							type = 0;
+	unsigned							type = 0; // PROCESSOR_CACHE_TYPE
 	unsigned							associativity = 0;
 } CACHE_INFO, * PCACHE_INFO;
 
@@ -133,6 +168,7 @@ typedef struct _LOGICAL_PROCESSOR_INFO
 	unsigned							currentFrequency = 0;
 	unsigned							maximumFrequency = 0;
 	unsigned							busFrequency = 0;
+#ifdef ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 	unsigned							SSE : 1;
 	unsigned							AVX : 1;
 	unsigned							AVX2 : 1;
@@ -155,6 +191,7 @@ typedef struct _LOGICAL_PROCESSOR_INFO
 	unsigned							AVX512_VP2INTERSECT : 1;
 	unsigned							SGX : 1;
 	unsigned							SHA : 1;
+#endif // ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 	unsigned							parked : 1;
 	unsigned							allocated : 1;
 	unsigned							allocatedToTargetProcess : 1;
@@ -181,6 +218,62 @@ typedef struct _NUMA_NODE_INFO
 	unsigned							group = 0;
 	ULONG64								mask = 0;
 }	NUMA_NODE_INFO, * PNUMA_NODE_INFO;
+
+// Feature flags
+struct FeatureFlags
+{
+	// CPUID.1:ECX
+	unsigned SSE3 : 1;		// 0, All x64 CPUs have at least SSE3
+	unsigned PCLMULQDQ : 1; // 1
+	unsigned SSSE3 : 1;		// 9
+	unsigned FMA : 1;		// 12, See 14.5.3 - On top of AVX
+	unsigned SSE4_1 : 1;	// 19
+	unsigned SSE4_2 : 1;	// 20
+	unsigned AES : 1;		// 25
+	unsigned XSAVE : 1;		// 26, Safe to call xgetbv with ecx=0
+	unsigned OSXSAVE : 1;	// 27
+	unsigned AVX : 1;		// 28. See 14.3
+	unsigned F16C : 1;		// 29
+	unsigned RDRAND : 1;	// 30
+
+	//AVX2: CPUID.(EAX=07H, ECX=0H):EBX.AVX2[bit 5]=1
+	unsigned AVX2 : 1; // Check OSXSAVE and AVX and OS_Supports_YMM
+	//Verify both CPUID.0x7.0:EBX.AVX512F[bit 16] = 1
+	unsigned AVX512F : 1;	// 16
+	unsigned AVX512DQ : 1;	// 17
+	unsigned AVX512_IFMA : 1; // 21
+	unsigned AVX512CD : 1;	// 28
+	unsigned AVX512BW : 1;	// 30
+	unsigned AVX512VL : 1;	// 31
+
+
+	// Derived
+	unsigned OS_Supports_YMM : 1;
+	unsigned OS_Supports_ZMM : 1;
+
+	bool AVX_Supported() const
+	{
+		return AVX && OS_Supports_YMM;
+	}
+	bool F16C_Supported() const
+	{
+		return AVX_Supported() && F16C;
+	}
+	bool AVX2_Supported() const
+	{
+		return AVX_Supported() && AVX2;
+	}
+	bool AVX512_State_Supported() const
+	{
+		return OS_Supports_ZMM;
+	}
+	// Initial set of AVX512 features supported on SkylakeX
+	bool AVX512_SKX_Supported() const
+	{
+		return OS_Supports_ZMM && AVX512F && AVX512VL && AVX512BW && AVX512DQ && AVX512CD;
+	}
+
+};
 
 // Struct to store Processor information
 typedef struct _PROCESSOR_INFO
@@ -214,22 +307,25 @@ typedef struct _PROCESSOR_INFO
 	std::map<unsigned, std::vector<ULONG>>	cpuSets;
 
 #endif
-	unsigned							osMajorVersion;
-	unsigned							osMinorVersion;
-	unsigned							osBuildNumber;
+	// TODO: These are not initialized
+	//unsigned							osMajorVersion;
+	//unsigned							osMinorVersion;
+	//unsigned							osBuildNumber;
 	const bool IsIntel()    const { return !strcmp("GenuineIntel", vendorID); }
 	const bool IsAMD()      const { return !strcmp("AuthenticAMD", vendorID); }
 
 	inline int GetCoreTypeCount(CoreTypes coreType)
 	{
 #ifdef ENABLE_CPU_SETS
-		return cpuSets[coreType].size();
+		return (int)cpuSets[coreType].size();
 #else
 		std::bitset<64> bits = coreMasks[coreType];
 
-		return bits.count();
+		return (int)bits.count();
 #endif
 	}
+
+	FeatureFlags flags{};
 
 } PROCESSOR_INFO, * PPROCESSOR_INFO;
 
@@ -248,10 +344,12 @@ inline const char* CoreTypeString(CoreTypes type)
 		return "Reserved_1";
 	case CoreTypes::INTEL_CORE:
 		return "P-Core";
+	default:
+		return "Any";
 	}
-	return "Any";
 }
 
+#ifdef HYBRIDDETECT_OS_WIN
 // Cache to String Conversion Helper Function
 inline const char* CacheTypeString(int type)
 {
@@ -268,12 +366,15 @@ inline const char* CacheTypeString(int type)
 	}
 	return "Any";
 }
+#endif
 
 // Helper function to Call the CPUID intrinsic
 inline bool CallCPUID(unsigned function, std::array<unsigned, 4>& registers, unsigned extFunction = 0, unsigned CPUIDFunctionMax = LEAF_EXTENDED_INFORMATION_8)
 {
+	HYBRID_DETECT_TRACE(10, ">>> (0x%.8x)", function);
 	if (function > CPUIDFunctionMax) return false;
 	CPUIDEX(registers.data(), function, extFunction);
+	HYBRID_DETECT_TRACE(10, "<<<");
 	return true;
 }
 
@@ -283,6 +384,7 @@ T* AdvanceBytes(T* p, SIZE_T cb)
 	return reinterpret_cast<T*>(reinterpret_cast<BYTE*>(p) + cb);
 }
 
+#ifdef HYBRIDDETECT_OS_WIN
 class EnumLogicalProcessorInformation
 {
 	// Based On: https://devblogs.microsoft.com/oldnewthing/20131028-00/?p=2823
@@ -329,12 +431,16 @@ private:
 
 inline void PrintMask(KAFFINITY Mask)
 {
+#if 0
+	printf("0x%.16llx", Mask);
+#else
 	for (int i = (sizeof(Mask) * 8) - 1; i >= 0; i--) {
 		if (Mask & (static_cast<KAFFINITY>(1) << i))
 			printf("%d", 1);
 		else
 			printf("%d", 0);
 	}
+#endif
 }
 
 inline bool IsHybridOSEx()
@@ -366,6 +472,8 @@ inline bool IsHybridOSEx()
 // Calls CPUID & GetLogicalProcessors to fill in PROCESSOR_INFO Caches & Cores
 inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 {
+	HYBRID_DETECT_TRACE(7, ">>>");
+
 #ifdef ENABLE_HYBRID_DETECT
 #ifdef ENABLE_CPU_SETS
 	unsigned long bufferSize;
@@ -417,6 +525,7 @@ inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 		cpuSetSize += nextCPUSet->Size;
 		
 	}
+	HYBRID_DETECT_TRACE(7, "<<<");
 
 	return true;
 #else
@@ -488,6 +597,8 @@ inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 // Calls CPUID & GetLogicalProcessors to fill in PROCESSOR_INFO Caches & Cores
 inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 {
+	HYBRID_DETECT_TRACE(7, ">>>");
+
 #ifdef ENABLE_HYBRID_DETECT
 	for (EnumLogicalProcessorInformation enumInfo(RelationGroup);
 		auto pinfo = enumInfo.Current(); enumInfo.MoveNext()) {
@@ -498,6 +609,7 @@ inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 		group.activeProcessorCount = pinfo->Group.GroupInfo->ActiveProcessorCount;
 		group.maximumProcessorCount = pinfo->Group.GroupInfo->MaximumProcessorCount;
 		group.activeProcessorMask = (ULONG)pinfo->Group.GroupInfo->ActiveProcessorMask;
+		HYBRID_DETECT_TRACE(5, "=== group %d: ActiveProcessorCount = %d, MaximumProcessorCount = %d", procInfo.numGroups - 1, pinfo->Group.GroupInfo->ActiveProcessorCount, pinfo->Group.GroupInfo->MaximumProcessorCount);
 		procInfo.groups.push_back(group);
 	}
 
@@ -541,6 +653,8 @@ inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 
 		procInfo.caches.push_back(cacheInfo);
 	}
+	HYBRID_DETECT_TRACE(7, "<<<");
+
 	return true;
 #else
 	return false;
@@ -549,6 +663,7 @@ inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 
 inline void UpdateProcessorInfo(PROCESSOR_INFO& procInfo)
 {
+#ifdef HYBRIDDETECT_OS_WIN
 	// TODO: Not sure how this works with processor groups
 	// Query Current Frequency for each Logical Processor using CallNTPowerInformation
 	// https://docs.microsoft.com/en-us/windows/win32/api/powerbase/nf-powerbase-callntpowerinformation
@@ -561,11 +676,14 @@ inline void UpdateProcessorInfo(PROCESSOR_INFO& procInfo)
 		procInfo.cores[i].currentFrequency = pwrInfo[i].currentMhz;
 		procInfo.cores[i].powerInformation = pwrInfo[i];
 	}
+#endif
 }
+#endif // HYBRIDDETECT_OS_WIN
 
 // Calls CPUID & GetLogicalProcessors & CallNTPowerInformation to fill in PROCESSOR_INFO
 inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 {
+	HYBRID_DETECT_TRACE(7, ">>>");
 #ifdef ENABLE_HYBRID_DETECT
 	// https://software.intel.com/content/www/us/en/develop/download/intel-architecture-instruction-set-extensions-programming-reference.html
 
@@ -575,9 +693,6 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	// Maximum leaf ordinal Reported by CPUID
 	unsigned            CPUIDFunctionMax;
 
-	DWORD_PTR           affinityMask;
-	DWORD_PTR           processAffinityMask;
-	DWORD_PTR           sysAffinityMask;
 	std::bitset<32>     bits;
 
 	procInfo.coreMasks.emplace(CoreTypes::ANY, 0);
@@ -608,6 +723,46 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	memcpy(procInfo.vendorID + 8, &cpuInfo[CPUID_ECX], sizeof(cpuInfo[CPUID_ECX]));
 	procInfo.vendorID[12] = '\0';
 
+	CallCPUID(1, cpuInfo);
+	bits = cpuInfo[CPUID_ECX];
+	procInfo.flags.SSE3 = bits[0];
+	procInfo.flags.PCLMULQDQ = bits[1];
+	procInfo.flags.SSSE3 = bits[9];
+	procInfo.flags.FMA = bits[12];
+	procInfo.flags.SSE4_1 = bits[19];
+	procInfo.flags.SSE4_2 = bits[20];
+	procInfo.flags.AES = bits[25];
+	procInfo.flags.XSAVE = bits[26];
+	procInfo.flags.OSXSAVE = bits[27];
+	procInfo.flags.AVX = bits[28];
+	procInfo.flags.F16C = bits[29];
+	procInfo.flags.RDRAND = bits[30];
+
+	if (procInfo.flags.OSXSAVE)
+	{
+		uint64_t xcr0 = XGETBV(0);
+		if (xcr0 & 0x6)
+		{
+			procInfo.flags.OS_Supports_YMM = 1;
+			if (xcr0 & 0xe0)
+			{
+				procInfo.flags.OS_Supports_ZMM = 1;
+			}
+		}
+	}
+
+	CallCPUID(LEAF_EXTENDED_FEATURE_FLAGS, cpuInfo, 0, CPUIDFunctionMax);
+	{
+		bits = cpuInfo[CPUID_EBX];
+		procInfo.flags.AVX2 = bits[5];
+		procInfo.flags.AVX512F = bits[16];
+		procInfo.flags.AVX512DQ = bits[17];
+		procInfo.flags.AVX512_IFMA = bits[21];
+		procInfo.flags.AVX512CD = bits[28];
+		procInfo.flags.AVX512BW = bits[30];
+		procInfo.flags.AVX512VL = bits[31];
+	}
+
 	// Read Brand String from Extended CPUID information
 	CallCPUID(LEAF_EXTENDED_BRAND_STRING_1, cpuInfo);
 	memcpy(procInfo.brandString + 00, cpuInfo.data(), sizeof(cpuInfo));
@@ -636,6 +791,11 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 		procInfo.turboBoost3_0 = bits[14];
 	}
 
+#ifdef HYBRIDDETECT_OS_WIN
+	DWORD_PTR           affinityMask;
+	DWORD_PTR           processAffinityMask;
+	DWORD_PTR           sysAffinityMask;
+
 	// What does the process & system allow
 	GetProcessAffinityMask(GetCurrentProcess(), &processAffinityMask, &sysAffinityMask);
 
@@ -644,6 +804,8 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	// Fill in Logical Processors, short circuit if error.
 	if (GetLogicalProcessors(procInfo))
 	{
+		HYBRID_DETECT_TRACE(5, "=== procInfo.numLogicalCores = %d, procInfo.numGroups = %d", procInfo.numLogicalCores, procInfo.numGroups);
+
 		// Query Current Frequency for each Logical Processor using CallNTPowerInformation
 		// https://docs.microsoft.com/en-us/windows/win32/api/powerbase/nf-powerbase-callntpowerinformation
 		std::vector<LOGICAL_PROCESSOR_POWER_INFORMATION> pwrInfo(procInfo.numLogicalCores);
@@ -660,9 +822,14 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 
 			SetThreadGroupAffinity(GetCurrentThread(), &nextGroup, &prevGroup);
 
+			HYBRID_DETECT_TRACE(5, "=== group = %d, procInfo.groups[group].maximumProcessorCount = %d, procInfo.groups[group].activeProcessorCount = %d", group,
+				procInfo.groups[group].maximumProcessorCount, procInfo.groups[group].activeProcessorCount);
+
 			// Enumerate each logical core. Need active or maximum processor count?
-			for (unsigned core = 0; core < procInfo.groups[group].maximumProcessorCount; core++)
+			for (unsigned core = 0; core < procInfo.groups[group].activeProcessorCount; core++)
 			{
+				HYBRID_DETECT_TRACE(5, "=== core = %d", core);
+
 				// Logical Processor Info struct for storage.
 #ifdef ENABLE_CPU_SETS
 				LOGICAL_PROCESSOR_INFO& logicalCore = procInfo.cores[core];
@@ -671,7 +838,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 				logicalCore.logicalProcessorIndex = core;
 #endif
 				// Get the ID of the current processor;
-				int                                     prevProcessor = GetCurrentProcessorNumber();
+				//int                                     prevProcessor = GetCurrentProcessorNumber();
 
 				// Convert the oridinal position to an affinity mask.
 				affinityMask = (DWORD)IndexToMask(core);
@@ -681,6 +848,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 
 				logicalCore.processorMask = std::bitset<64>(affinityMask);
 
+#ifdef ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 				// Processor Extended State Enumeration Main Leaf (EAX = 0DH, ECX = 0)
 				CallCPUID(LEAF_EXTENDED_STATE, cpuInfo);
 				{
@@ -718,6 +886,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 					logicalCore.AVX512_4FMAPS = bits[3];
 					logicalCore.AVX512_VP2INTERSECT = bits[8];
 				}
+#endif // ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 
 				// Processor Frequency Information Leaf  function 0x16 only works on Sky-lake or newer.
 				CallCPUID(LEAF_FREQUENCY_INFORMATION, cpuInfo);
@@ -798,9 +967,12 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 		// Reset Process Affinity Mask
 		SetThreadAffinityMask(GetCurrentThread(), processAffinityMask);
 	}
+#endif // HYBRIDDETECT_OS_WIN
 #endif
+	HYBRID_DETECT_TRACE(7, "<<< ");
 }
 
+#ifdef HYBRIDDETECT_OS_WIN
 inline bool SetMemoryPriority(HANDLE threadHandle, UINT memoryPriority)
 {
 	MEMORY_PRIORITY_INFORMATION memoryPriorityInfo;
@@ -850,6 +1022,7 @@ inline bool AutoPowerThrottling(HANDLE threadHandle)
 	return SetThreadInformation(threadHandle, ThreadPowerThrottling,
 		&throttlingState, sizeof(throttlingState));
 }
+#endif
 
 #ifdef ENABLE_CPU_SETS
 
@@ -1214,3 +1387,5 @@ inline bool RunOnOne(PROCESSOR_INFO& procInfo, const short coreID, const ULONG64
 }
 
 #endif
+
+} // namespace HybridDetect
