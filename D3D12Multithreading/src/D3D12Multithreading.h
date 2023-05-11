@@ -16,6 +16,7 @@
 #include "StepTimer.h"
 #include "SquidRoom.h"
 #include "..\..\HybridDetectConsole\HybridDetect.h"
+using namespace HybridDetect;
 
 using namespace DirectX;
 

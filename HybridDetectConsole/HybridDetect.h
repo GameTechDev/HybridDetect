@@ -96,7 +96,9 @@ namespace HybridDetect
 #define ENABLE_CPU_SETS
 
 // No current CPUs have ISA support that varies between cores
-//#define ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
+#ifndef ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
+#define ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION 1 // Default to enabled for backward compatibility
+#endif
 
 // Simple conversion from an ordinal, n, to a set bit at position n
 #define IndexToMask(n)  (1UL << n)
@@ -168,7 +170,7 @@ typedef struct _LOGICAL_PROCESSOR_INFO
 	unsigned							currentFrequency = 0;
 	unsigned							maximumFrequency = 0;
 	unsigned							busFrequency = 0;
-#ifdef ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
+#if ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 	unsigned							SSE : 1;
 	unsigned							AVX : 1;
 	unsigned							AVX2 : 1;
@@ -848,7 +850,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 
 				logicalCore.processorMask = std::bitset<64>(affinityMask);
 
-#ifdef ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
+#if ENABLE_PER_LOGICAL_CPUID_ISA_DETECTION
 				// Processor Extended State Enumeration Main Leaf (EAX = 0DH, ECX = 0)
 				CallCPUID(LEAF_EXTENDED_STATE, cpuInfo);
 				{
