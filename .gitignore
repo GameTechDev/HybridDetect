@@ -35,3 +35,14 @@
 #misc files
 *.pdb
 *.db
+*.bak
+.vs
+*.ilk
+asteroids_d3d12/build/Debug/obj
+D3D12Multithreading/src/obj
+HybridDetectConsole/x64/Debug
+D3D12Multithreading/src/bin/x64/Debug
+asteroids_d3d12/build/Release/obj
+D3D12Multithreading/src/bin/x64/Release
+HybridDetectConsole/x64/Release
+x64/Release

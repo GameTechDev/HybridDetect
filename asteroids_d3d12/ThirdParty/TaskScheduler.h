@@ -26,6 +26,7 @@
 
 #include "spin_mutex.h"
 #include "..\..\HybridDetectConsole\HybridDetect.h"
+using namespace HybridDetect;
 
   // Use to give variable their own cache line to prevent false sharing 
 #define CACHE_ALIGN __declspec(align(64))
