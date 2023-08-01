@@ -15,6 +15,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
+#include "GPUInspector.h"
 
 #define IMGUI_ENABLED
 
@@ -96,6 +97,8 @@ void D3D12Multithreading::OnInit()
     LoadContexts();
 
     LoadImGui();
+
+    gpuList = QueryAdapters(true);
 }
 
 
@@ -835,6 +838,7 @@ void D3D12Multithreading::OnUpdate()
     ImGui::Checkbox("Show Caches", &m_showCaches);
     ImGui::Checkbox("Show Masks", &m_showMasks);
     ImGui::Checkbox("Spark Lines", &m_showSparklines);
+    ImGui::Checkbox("GPU Inspector", &m_showGpuInspector);
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
     ImGui::Separator();
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Groups");
@@ -1181,6 +1185,74 @@ void D3D12Multithreading::OnUpdate()
             }
         }
         ImGui::Separator();
+        ImGui::End();
+    }
+
+    if (m_showGpuInspector && gpuList.size() > 0)
+    {
+        if(!m_showCores && !m_showCaches)
+            v = ImVec2(300, 0);
+        else
+            v = ImVec2(300 + (m_width - 300 - 575), 0);
+        s = ImVec2(700, static_cast<float>(m_height));
+
+        static int selectedSet = 0;
+        static int activeTab = 0;
+        std::vector<const char*> labels;
+        std::vector<std::string> labelStorage;
+        labels.reserve(gpuList.size());
+        for (auto gpu : gpuList)
+        {
+            std::string label(gpu->adapter_name.begin(), gpu->adapter_name.end());
+            labelStorage.push_back(label);
+            labels.push_back(labelStorage.back().c_str());
+        }
+        ImGui::Begin("GPU Inspector");
+        ImGui::SetWindowPos(v);
+        ImGui::SetWindowSize(s);
+        ImGui::Separator();
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+        ImGui::PopStyleVar();
+        ImGui::SameLine();
+        ImGui::Combo("Graphics Adapter", &selectedSet, labels.data(), labels.size());
+        ImGui::Separator();
+
+        std::list<GPU_DEVICE_INFO*>::const_iterator it = gpuList.begin();
+        std::advance(it, selectedSet);
+        GPU_DEVICE_INFO* gpu = *it;
+
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Vendor ID                  %d", gpu->adapter_vendor);
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Device ID                  %d", gpu->device_id);
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Video Memory               %s", DisplayMem(gpu->adapter_video_memory).c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Dedicated Memory           %s", DisplayMem(gpu->adapter_dedicated_memory).c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Shared Memory              %s", DisplayMem(gpu->adapter_shared_memory).c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Is Warp Device:            %s", gpu->adapter_is_warp ? "Yes" : "No");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "D3D12 Feature Level:       %s", GPUFeatureLevelToString(gpu->device_d3d12_feature_level).c_str());
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "D3D11 Feature Level:       %s", GPUFeatureLevelToString(gpu->device_d3d11_feature_level).c_str());
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Features");
+        if (ImGui::BeginTabBar("Features"))
+        {
+            if (ImGui::BeginTabItem("DX11"))
+            {
+                for (auto feature : gpu->features)
+                {
+                    if(!feature->is_d3d12)
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%-75s %8d", feature->feature_name.c_str(), feature->feature_value);
+                }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("DX12"))
+            {
+                for (auto feature : gpu->features)
+                {
+                    if(feature->is_d3d12)
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%-75s %8d", feature->feature_name.c_str(), feature->feature_value);
+                }
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
         ImGui::End();
     }
 #endif
