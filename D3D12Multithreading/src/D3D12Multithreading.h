@@ -28,6 +28,7 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 class FrameResource;
+struct GPU_DEVICE_INFO;
 
 struct LightState
 {
@@ -151,9 +152,12 @@ private:
 
     // Special Sauce
 	PROCESSOR_INFO m_procInfo;
+    std::list<GPU_DEVICE_INFO*> gpuList;
     void LoadImGui();
     bool m_showMasks = true;
     bool m_showCores = true;
     bool m_showCaches = true;
     bool m_showSparklines = false;
+    bool m_showGpuInspector = false;
+
 };
