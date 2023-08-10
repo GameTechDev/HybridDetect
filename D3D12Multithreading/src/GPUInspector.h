@@ -11,6 +11,8 @@
 #include <dxgi1_6.h>
 #include <string>
 #include <stdexcept>
+#include <sstream>
+#include <iomanip>
 
 using namespace DirectX;
 
@@ -602,9 +604,11 @@ void GetGPUInfo()
 
 std::string DisplayMem(long long bytes)
 {
-    std::string display;
-    int GB = static_cast<int>(bytes / pow(1024,3));
+    std::stringstream display;
+    double GB = static_cast<double>(bytes / pow(1024,3));
     if (GB < 1)
-        return std::to_string(static_cast<int>(bytes / pow(1024, 2))) + " MB";
-    return std::to_string(GB) + " GB";
+        display << std::fixed << std::setprecision(2) << (static_cast<double>(bytes / pow(1024, 2))) << " MB";
+    else 
+        display << std::fixed << std::setprecision(2) << GB << " GB";
+    return display.str();
 }
