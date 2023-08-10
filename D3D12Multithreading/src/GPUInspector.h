@@ -44,10 +44,10 @@ typedef struct GPU_DEVICE_INFO
     int                                                         adapter_index;
     int                                                         device_id;
     std::wstring                                                adapter_name;
-    int                                                         adapter_vendor;
-    int                                                         adapter_video_memory;
-    int                                                         adapter_dedicated_memory;
-    int                                                         adapter_shared_memory;
+    long long                                                   adapter_vendor;
+    long long                                                   adapter_video_memory;
+    long long                                                   adapter_dedicated_memory;
+    long long                                                   adapter_shared_memory;
     bool                                                        adapter_is_warp;
     IDXGIAdapter*                                               adapter = nullptr;
     ComPtr<ID3D12Device>                                        device_d3d12 = nullptr;
@@ -600,7 +600,7 @@ void GetGPUInfo()
     }
 }
 
-std::string DisplayMem(int bytes)
+std::string DisplayMem(long long bytes)
 {
     std::string display;
     int GB = static_cast<int>(bytes / pow(1024,3));
