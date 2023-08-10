@@ -154,10 +154,10 @@ private:
 	PROCESSOR_INFO m_procInfo;
     std::list<GPU_DEVICE_INFO*> gpuList;
     void LoadImGui();
-    bool m_showMasks = false;
-    bool m_showCores = false;
-    bool m_showCaches = false;
+    bool m_showMasks = true;
+    bool m_showCores = true;
+    bool m_showCaches = true;
     bool m_showSparklines = false;
-    bool m_showGpuInspector = true;
+    bool m_showGpuInspector = false;
 
 };

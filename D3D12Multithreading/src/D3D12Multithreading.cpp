@@ -833,6 +833,7 @@ void D3D12Multithreading::OnUpdate()
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "L1 Caches               %d", m_procInfo.numL1Caches);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "L2 Caches               %d", m_procInfo.numL2Caches);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "L3 Caches               %d", m_procInfo.numL3Caches);
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "GPUs                    %d", gpuList.size());
 
     ImGui::Checkbox("Show Cores", &m_showCores);
     ImGui::Checkbox("Show Caches", &m_showCaches);
@@ -1190,10 +1191,7 @@ void D3D12Multithreading::OnUpdate()
 
     if (m_showGpuInspector && gpuList.size() > 0)
     {
-        if(!m_showCores && !m_showCaches)
-            v = ImVec2(300, 0);
-        else
-            v = ImVec2(300 + (m_width - 300 - 575), 0);
+        v = ImVec2(300, 0);
         s = ImVec2(700, static_cast<float>(m_height));
 
         static int selectedSet = 0;
