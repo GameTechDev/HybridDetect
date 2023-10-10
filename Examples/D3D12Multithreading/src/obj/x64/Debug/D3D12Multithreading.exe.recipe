@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\bin\x64\Debug\D3D12Multithreading.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\shaders.hlsl</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\SquidRoom.bin</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\bin\x64\Debug\shaders.hlsl</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\bin\x64\Debug\SquidRoom.bin</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

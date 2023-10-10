@@ -1,0 +1,48 @@
+﻿  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\asteroid_ps.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\asteroid_ps_d3d11.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\asteroid_vs.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\font_ps.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\skybox_ps.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\skybox_vs.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\sprite_ps.h
+  compilation header save succeeded; see D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\sprite_vs.h
+  asteroids_d3d12.cpp
+  camera.cpp
+  DDSTextureLoader.cpp
+  mesh.cpp
+  profile.cpp
+  simulation.cpp
+  texture.cpp
+  WinWrapper.cpp
+  DynamicTaskMgrBase.cpp
+  TaskMgrSS.cpp
+  TaskScheduler.cpp
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\simulation.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\simulation.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\simulation.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file src\simulation.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\WinWrapper.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\WinWrapper.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\WinWrapper.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file src\WinWrapper.cpp)
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\simulation.cpp(228,19): warning C4018: '<': signed/unsigned mismatch
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\asteroids_d3d12.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\asteroids_d3d12.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file src\asteroids_d3d12.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file src\asteroids_d3d12.cpp)
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\asteroids_d3d12.cpp(1116,26): warning C4018: '<': signed/unsigned mismatch
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\DynamicTaskMgrBase.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\DynamicTaskMgrBase.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\DynamicTaskMgrBase.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file ThirdParty\DynamicTaskMgrBase.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskScheduler.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskScheduler.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskScheduler.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file ThirdParty\TaskScheduler.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskMgrSS.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskMgrSS.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data (compiling source file ThirdParty\TaskMgrSS.cpp)
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch (compiling source file ThirdParty\TaskMgrSS.cpp)
+  simplexnoise1234.c
+LINK : warning LNK4199: /DELAYLOAD:d3d11.dll ignored; no imports found from d3d11.dll
+  D3D12Asteroids.vcxproj -> D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\bin\x64\Debug\D3D12Asteroids.exe

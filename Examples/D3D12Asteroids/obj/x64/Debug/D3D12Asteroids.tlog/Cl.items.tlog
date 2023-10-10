@@ -1,0 +1,12 @@
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\asteroids_d3d12.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\asteroids_d3d12.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\camera.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\camera.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\DDSTextureLoader.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\DDSTextureLoader.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\mesh.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\mesh.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\profile.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\profile.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\simplexnoise1234.c;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\simplexnoise1234.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\simulation.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\simulation.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\texture.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\texture.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\src\WinWrapper.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\WinWrapper.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\ThirdParty\DynamicTaskMgrBase.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\DynamicTaskMgrBase.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\ThirdParty\TaskMgrSS.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\TaskMgrSS.obj
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\ThirdParty\TaskScheduler.cpp;D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Asteroids\obj\x64\Debug\TaskScheduler.obj

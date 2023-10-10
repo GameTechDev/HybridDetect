@@ -1,0 +1,90 @@
+﻿  Performing Custom Build Tools
+  Performing Custom Build Tools
+cl : command line  warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  stdafx.cpp
+cl : command line  warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  Main.cpp
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch
+  FrameResource.cpp
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch
+  DXSample.cpp
+  D3D12Multithreading.cpp
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(224,13): warning C4244: 'argument': conversion from 'SIZE_T' to 'int', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(225,13): warning C4244: 'argument': conversion from 'SIZE_T' to 'int', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(226,13): warning C4311: 'type cast': pointer truncation from 'const void *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(226,13): warning C4302: 'type cast': truncation from 'const void *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(227,13): warning C4311: 'type cast': pointer truncation from 'void *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(227,13): warning C4302: 'type cast': truncation from 'void *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(243,13): warning C4311: 'type cast': pointer truncation from 'GUID *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(243,13): warning C4302: 'type cast': truncation from 'GUID *' to 'int'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(111,69): warning C4101: 'feature_shader_model': unreferenced local variable
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): warning C4477: 'wprintf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type '__int64'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%lld' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%Id' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%I64d' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): warning C4477: 'wprintf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type '__int64'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%lld' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%Id' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%I64d' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): warning C4477: 'wprintf' : format string '%d' requires an argument of type 'int', but variadic argument 3 has type '__int64'
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%lld' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%Id' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(593,17): message : consider using '%I64d' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(594,17): warning C4477: 'wprintf' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'const _Elem *'
+          with
+          [
+              _Elem=char
+          ]
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(594,17): message : consider using '%hs' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(594,17): message : consider using '%Ts' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(594,17): message : this warning is based on non-standard semantics used by Visual C++
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(595,17): warning C4477: 'wprintf' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'const _Elem *'
+          with
+          [
+              _Elem=char
+          ]
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(595,17): message : consider using '%hs' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(595,17): message : consider using '%Ts' in the format string
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\GPUInspector.h(595,17): message : this warning is based on non-standard semantics used by Visual C++
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(757,29): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(886,38): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(888,38): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(938,155): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(949,38): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(952,38): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(992,28): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(1056,24): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(1151,52): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(1153,28): warning C4244: 'argument': conversion from 'UINT' to 'float', possible loss of data
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.37.32822\include\xstring(2728,53): warning C4244: 'argument': conversion from 'wchar_t' to 'const _Elem', possible loss of data
+          with
+          [
+              _Elem=char
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.37.32822\include\xstring(2584,17): message : see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct_from_iter<wchar_t*,wchar_t*,_Size_type>(_Iter,const _Sent,_Size)' being compiled
+          with
+          [
+              _Size_type=unsigned __int64,
+              _Iter=wchar_t *,
+              _Sent=wchar_t *,
+              _Size=unsigned __int64
+          ]
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(1204,30): message : see reference to function template instantiation 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)' being compiled
+          with
+          [
+              _Elem=wchar_t,
+              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
+              _Alloc=std::allocator<char>
+          ]
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\D3D12Multithreading.cpp(1204,30): message : see the first reference to 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string' in 'D3D12Multithreading::OnUpdate'
+  Camera.cpp
+  Win32Application.cpp
+  imgui_widgets.cpp
+  imgui_impl_win32.cpp
+  imgui_impl_dx12.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui.cpp
+  Generating Code...
+  D3D12Multithreading.vcxproj -> D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\bin\x64\Debug\D3D12Multithreading.exe

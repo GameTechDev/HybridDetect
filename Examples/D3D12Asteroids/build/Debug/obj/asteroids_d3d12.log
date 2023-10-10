@@ -1,0 +1,9 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (build\Debug\obj\) contains files shared from another project (asteroids_d3d12.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  WinWrapper.cpp
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1047,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1055,79): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1065,69): warning C4267: 'argument': conversion from 'size_t' to 'ULONG', possible loss of data
+D:\GitHub\GameTechDev\HybridDetect\HybridDetect.h(1180,13): warning C4018: '<': signed/unsigned mismatch
+  simplexnoise1234.c
+LINK : warning LNK4199: /DELAYLOAD:d3d11.dll ignored; no imports found from d3d11.dll
+  asteroids_d3d12.vcxproj -> D:\GitHub\GameTechDev\HybridDetect\Examples\asteroids_d3d12\build\Debug\bin\D3D12Asteroids.exe

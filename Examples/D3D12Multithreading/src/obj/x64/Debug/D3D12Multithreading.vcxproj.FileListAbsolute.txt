@@ -1,0 +1,2 @@
+D:\GitHub\GameTechDev\HybridDetect\D3D12Multithreading\src\bin\x64\Debug\WinPixEventRuntime.dll
+D:\GitHub\GameTechDev\HybridDetect\Examples\D3D12Multithreading\src\bin\x64\Debug\WinPixEventRuntime.dll
