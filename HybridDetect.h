@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2021, Intel Corporation
+// Copyright (c) 2021-2024, Intel Corporation
 // Permission is hereby granted, free of charge, to any person obtaining a   copy of this software and associated
 // documentation files (the "Software"), to deal in the Software without restriction, including without limitation 
 // the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
@@ -22,13 +22,37 @@
 #include <stdio.h>
 #include <bitset>
 #include <map>
-#include <assert.h>
 #include <thread>
+#include <string.h>
+
+#ifndef HYBRIDDETECT_DEBUG_REQUIRE
+    #include <assert.h>
+    #define HYBRIDDETECT_DEBUG_REQUIRE(x) assert(x)
+#endif
 
 #ifdef _WIN32
-#define HYBRIDDETECT_OS_WIN
+    #define HYBRIDDETECT_OS_WIN 1
+#if defined(_M_X64) || __x86_64__
+    #define HYBRIDDETECT_CPU_X86_64 1
 #else
-#pragma message("Warning: " __FILE__ " not yet tested on non-Windows systems")
+	#define HYBRIDDETECT_CPU_X86_64 0
+#endif
+#else
+    #if __APPLE__
+        #include <sys/sysctl.h>
+        #include <TargetConditionals.h>
+        #if TARGET_CPU_X86_64
+            #define HYBRIDDETECT_CPU_X86_64 1
+        #else
+            #define HYBRIDDETECT_CPU_X86_64 0
+        #endif
+    #else
+        #if __x86_64__
+            #define HYBRIDDETECT_CPU_X86_64 1
+        #else
+            #define HYBRIDDETECT_CPU_X86_64 0
+        #endif
+    #endif
 #endif
 
 #ifdef HYBRIDDETECT_OS_WIN
@@ -73,16 +97,45 @@ typedef void* HANDLE;
 namespace HybridDetect
 {
 
-#ifdef _WIN32
+#if defined(_WIN32)
+#if !defined(_M_ARM64)
 // Simple wrapper for __cpuid intrinsic, created for cross platform support e.g. WIN32
 #define CPUID(registers, function) __cpuid((int*)registers, (int)function);
 #define CPUIDEX(registers, function, extFunction) __cpuidex((int*)registers, (int)function, (int)extFunction);
 #define XGETBV(xcrReg) _xgetbv(xcrReg)
-#else 
+#else
+// This is just to get LibXPUInfo to compile for arm64. It should be a dead path otherwise.
+#define CPUID(registers, function) 0;
+#define CPUIDEX(registers, function, extFunction) 0;
+#define XGETBV(xcrReg) 0;
+#endif
+#elif __APPLE__
+#if TARGET_CPU_X86_64
+#define CPUID(registers, function) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (0));
+#define CPUIDEX(registers, function, extFunction) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (extFunction));
+inline std::uint64_t xgetbv_asm(int xcrReg)
+{
+    std::uint64_t xcrh;
+    asm volatile ("xgetbv" : "=a" (xcrReg), "=d" (xcrh) : "c" (0));
+    return xcrReg | (xcrh << 32);
+}
+#define XGETBV(xcrReg) xgetbv_asm(xcrReg)
+#else
+#define CPUID(registers, function)
+#define CPUIDEX(registers, function, extFunction)
+#define XGETBV(xcrReg) 0
+#endif
+#else
 // Linux Stuff
 #define CPUID(registers, function) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (0));
 #define CPUIDEX(registers, function, extFunction) asm volatile ("cpuid" : "=a" (registers[0]), "=b" (registers[1]), "=c" (registers[2]), "=d" (registers[3]) : "a" (function), "c" (extFunction));
-#define XGETBV(xcrReg) (0) // TODO
+inline std::uint64_t xgetbv_asm(int xcrReg)
+{
+    std::uint64_t xcrh;
+    asm volatile ("xgetbv" : "=a" (xcrReg), "=d" (xcrh) : "c" (0));
+    return xcrReg | (xcrh << 32);
+}
+#define XGETBV(xcrReg) xgetbv_asm(xcrReg)
 #endif
 
 // Enables/Disables Hybrid Detect
@@ -138,12 +191,17 @@ namespace HybridDetect
 
 enum CoreTypes
 {
-	ANY = -1,
-	NONE = 0x00,
+    ANY = -1,
+    NONE = 0x00,
+#if HYBRIDDETECT_CPU_X86_64
 	RESERVED0 = 0x10,
 	INTEL_ATOM = 0x20,
 	RESERVED1 = 0x30,
 	INTEL_CORE = 0x40,
+#else
+    PERFLEVEL0 = 1,
+    PERFLEVEL1 = 2,
+#endif
 };
 
 // Struct to store information for each Cache.
@@ -320,10 +378,6 @@ typedef struct _PROCESSOR_INFO
 	std::map<unsigned, std::vector<ULONG>>	cpuSets;
 
 #endif
-	// TODO: These are not initialized
-	//unsigned							osMajorVersion;
-	//unsigned							osMinorVersion;
-	//unsigned							osBuildNumber;
 	bool IsIntel()    const { return !strcmp("GenuineIntel", vendorID); }
 	bool IsAMD()      const { return !strcmp("AuthenticAMD", vendorID); }
 
@@ -338,7 +392,13 @@ typedef struct _PROCESSOR_INFO
 #endif
 	}
 
-	FeatureFlags flags{};
+	unsigned cpuid_1_eax = 0; // Basic CPU family/model/stepping
+
+	union
+	{
+		FeatureFlags flags;
+		std::uint64_t flagsUI64 = 0; // Make flags field 8-bytes for extensibility and easier (de)serialization
+	};
 
 } PROCESSOR_INFO, * PPROCESSOR_INFO;
 
@@ -349,6 +409,7 @@ inline const char* CoreTypeString(CoreTypes type)
 	{
 	case CoreTypes::NONE:
 		return "None";
+#if HYBRIDDETECT_CPU_X86_64
 	case CoreTypes::RESERVED0:
 		return "Reserved_0";
 	case CoreTypes::INTEL_ATOM:
@@ -357,6 +418,12 @@ inline const char* CoreTypeString(CoreTypes type)
 		return "Reserved_1";
 	case CoreTypes::INTEL_CORE:
 		return "P-Core";
+#else
+    case CoreTypes::PERFLEVEL0:
+        return "PerfLevel0";
+    case CoreTypes::PERFLEVEL1:
+        return "PerfLevel1";
+#endif
 	default:
 		return "Any";
 	}
@@ -386,7 +453,7 @@ inline bool CallCPUID(unsigned function, std::array<unsigned, 4>& registers, uns
 {
 	HYBRID_DETECT_TRACE(10, ">>> (0x%.8x)", function);
 	if (function > CPUIDFunctionMax) return false;
-	CPUIDEX(registers.data(), function, extFunction)
+	CPUIDEX(registers.data(), function, extFunction);
 	HYBRID_DETECT_TRACE(10, "<<<");
 	return true;
 }
@@ -460,7 +527,7 @@ inline bool IsHybridOSEx()
 {
 	OSVERSIONINFOEX versionInfo;
 	DWORDLONG conditionMask = 0;
-	int operation = VER_GREATER_EQUAL;
+	constexpr BYTE operation = VER_GREATER_EQUAL;
 
 	ZeroMemory(&versionInfo, sizeof(OSVERSIONINFOEX));
 
@@ -606,13 +673,14 @@ inline bool GetLogicalProcessors(PROCESSOR_INFO& procInfo)
 #endif
 
 }
+#endif // HYBRIDDETECT_OS_WIN
 
 // Calls CPUID & GetLogicalProcessors to fill in PROCESSOR_INFO Caches & Cores
 inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 {
 	HYBRID_DETECT_TRACE(7, ">>>");
 
-#ifdef ENABLE_HYBRID_DETECT
+#ifdef HYBRIDDETECT_OS_WIN
 	for (EnumLogicalProcessorInformation enumInfo(RelationGroup);
 		auto pinfo = enumInfo.Current(); enumInfo.MoveNext()) {
 		GROUP_INFO group;
@@ -669,6 +737,50 @@ inline bool GetLogicalProcessorsEx(PROCESSOR_INFO& procInfo)
 	HYBRID_DETECT_TRACE(7, "<<<");
 
 	return true;
+#elif defined(__APPLE__)
+    // See https://developer.apple.com/documentation/kernel/1387446-sysctlbyname/determining_system_capabilities
+    int nperfLevels=0;
+    {
+        size_t len=sizeof(nperfLevels);
+        sysctlbyname("hw.nperflevels", &nperfLevels, &len, NULL, 0);
+    }
+    {
+        for (int i=0; i < nperfLevels; ++i)
+        {
+            size_t l2cacheSize=0;
+            size_t len=sizeof(l2cacheSize);
+            size_t cacheSize=0;
+            int physicalCPU=0;
+            int cpusperL2=0;
+            size_t len4=sizeof(physicalCPU);
+            std::string perfName = "hw.perflevel" + std::to_string(i);
+            std::string cacheName = perfName + ".l2cachesize";
+            int err;
+            err = sysctlbyname((perfName+".physicalcpu").c_str(), &physicalCPU, &len4, NULL, 0);
+            err = sysctlbyname((perfName+".cpusperl2").c_str(), &cpusperL2, &len4, NULL, 0);
+
+            err = sysctlbyname(cacheName.c_str(), &cacheSize, &len, NULL, 0);
+            if (!err)
+            {
+                l2cacheSize = (physicalCPU / cpusperL2) * cacheSize;
+                CACHE_INFO cacheInfo{};
+                cacheInfo.level = 2;
+                procInfo.numL2Caches++;
+                cacheInfo.size = (unsigned)l2cacheSize;
+                procInfo.caches.push_back(cacheInfo);
+            }
+        }
+    }
+    
+#if 0
+    {
+        std::string tempStr;
+        tempStr.resize(64);
+        size_t len=tempStr.capacity();
+        sysctlbyname("hw.cachesize", tempStr.data(), &len, NULL, 0);
+    }
+#endif
+	return true;
 #else
 	return false;
 #endif
@@ -691,7 +803,6 @@ inline void UpdateProcessorInfo(PROCESSOR_INFO& procInfo)
 	}
 #endif
 }
-#endif // HYBRIDDETECT_OS_WIN
 
 // Calls CPUID & GetLogicalProcessors & CallNTPowerInformation to fill in PROCESSOR_INFO
 inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
@@ -701,27 +812,37 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	// https://software.intel.com/content/www/us/en/develop/download/intel-architecture-instruction-set-extensions-programming-reference.html
 
 		// Store registers from CPUID
-	std::array<unsigned, 4>  cpuInfo;
+	std::array<unsigned, 4>  cpuInfo{}; // zero-init
 
 	// Maximum leaf ordinal Reported by CPUID
 	unsigned            CPUIDFunctionMax;
 
 	std::bitset<32>     bits;
 
-	procInfo.coreMasks.emplace(CoreTypes::ANY, 0);
-	procInfo.coreMasks.emplace(CoreTypes::NONE, 0);
-	procInfo.coreMasks.emplace(CoreTypes::RESERVED0, 0);
-	procInfo.coreMasks.emplace(CoreTypes::INTEL_ATOM, 0);
-	procInfo.coreMasks.emplace(CoreTypes::RESERVED1, 0);
-	procInfo.coreMasks.emplace(CoreTypes::INTEL_CORE, 0);
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::ANY, ULONG64(0)));
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::NONE, ULONG64(0)));
+#if HYBRIDDETECT_CPU_X86_64
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::RESERVED0, ULONG64(0)));
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::INTEL_ATOM, ULONG64(0)));
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::RESERVED1, ULONG64(0)));
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::INTEL_CORE, ULONG64(0)));
+#else
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::PERFLEVEL0, ULONG64(0)));
+	procInfo.coreMasks.emplace(std::make_pair<short, ULONG64>(CoreTypes::PERFLEVEL1, ULONG64(0)));
+#endif
 
 #ifdef ENABLE_CPU_SETS
-	procInfo.cpuSets.emplace(CoreTypes::ANY, std::vector<ULONG>());
-	procInfo.cpuSets.emplace(CoreTypes::NONE, std::vector<ULONG>());
-	procInfo.cpuSets.emplace(CoreTypes::RESERVED0, std::vector<ULONG>());
-	procInfo.cpuSets.emplace(CoreTypes::INTEL_ATOM, std::vector<ULONG>());
-	procInfo.cpuSets.emplace(CoreTypes::RESERVED1, std::vector<ULONG>());
-	procInfo.cpuSets.emplace(CoreTypes::INTEL_CORE, std::vector<ULONG>());
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::ANY, std::vector<ULONG>()));
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::NONE, std::vector<ULONG>()));
+#if HYBRIDDETECT_CPU_X86_64
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::RESERVED0, std::vector<ULONG>()));
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::INTEL_ATOM, std::vector<ULONG>()));
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::RESERVED1, std::vector<ULONG>()));
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::INTEL_CORE, std::vector<ULONG>()));
+#else
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::PERFLEVEL0, std::vector<ULONG>()));
+	procInfo.cpuSets.emplace(std::make_pair((short)CoreTypes::PERFLEVEL1, std::vector<ULONG>()));
+#endif
 #endif
 
 	//Basic CPUID Information
@@ -730,13 +851,20 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	// Store highest function number.
 	CPUIDFunctionMax = cpuInfo[CPUID_EAX];
 
+#if HYBRIDDETECT_CPU_X86_64
 	// Read Vendor ID from CPUID
 	memcpy(procInfo.vendorID + 0, &cpuInfo[CPUID_EBX], sizeof(cpuInfo[CPUID_EBX]));
 	memcpy(procInfo.vendorID + 4, &cpuInfo[CPUID_EDX], sizeof(cpuInfo[CPUID_EDX]));
 	memcpy(procInfo.vendorID + 8, &cpuInfo[CPUID_ECX], sizeof(cpuInfo[CPUID_ECX]));
 	procInfo.vendorID[12] = '\0';
+#else
+	static const char kVendorApple[] = "Apple";
+	strcpy(procInfo.vendorID, kVendorApple);
+	procInfo.brandString[0] = 0;
+#endif
 
 	CallCPUID(1, cpuInfo);
+	procInfo.cpuid_1_eax = cpuInfo[CPUID_EAX];
 	bits = cpuInfo[CPUID_ECX];
 	procInfo.flags.SSE3 = bits[0];
 	procInfo.flags.PCLMULQDQ = bits[1];
@@ -776,6 +904,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 		procInfo.flags.AVX512VL = bits[31];
 	}
 
+#if HYBRIDDETECT_CPU_X86_64
 	// Read Brand String from Extended CPUID information
 	CallCPUID(LEAF_EXTENDED_BRAND_STRING_1, cpuInfo);
 	memcpy(procInfo.brandString + 00, cpuInfo.data(), sizeof(cpuInfo));
@@ -783,6 +912,12 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 	memcpy(procInfo.brandString + 16, cpuInfo.data(), sizeof(cpuInfo));
 	CallCPUID(LEAF_EXTENDED_BRAND_STRING_3, cpuInfo);
 	memcpy(procInfo.brandString + 32, cpuInfo.data(), sizeof(cpuInfo));
+#elif defined(__APPLE__)
+	{
+		size_t len = sizeof(procInfo.brandString);
+		sysctlbyname("machdep.cpu.brand_string", &procInfo.brandString, &len, NULL, 0);
+	}
+#endif
 
 	// Structured Extended Feature Flags Enumeration Leaf 
 	// (Output depends on ECX input value)
@@ -811,9 +946,11 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 
 	// What does the process & system allow
 	GetProcessAffinityMask(GetCurrentProcess(), &processAffinityMask, &sysAffinityMask);
+#endif
 
 	GetLogicalProcessorsEx(procInfo);
 
+#ifdef HYBRIDDETECT_OS_WIN
 	// Fill in Logical Processors, short circuit if error.
 	if (GetLogicalProcessors(procInfo))
 	{
@@ -830,7 +967,7 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 			// TODO Use Thread Group Affinity https://docs.microsoft.com/en-us/windows/win32/api/processtopologyapi/nf-processtopologyapi-setthreadgroupaffinity
 			GROUP_AFFINITY nextGroup;
 			GROUP_AFFINITY prevGroup;
-			nextGroup.Group = group;
+			nextGroup.Group = static_cast<WORD>(group);
 			nextGroup.Mask = 0xffffffff;
 
 			SetThreadGroupAffinity(GetCurrentThread(), &nextGroup, &prevGroup);
@@ -911,8 +1048,9 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 					// Fall-back to ProcessorPowerInfo for older CPUs
 					if (logicalCore.baseFrequency == 0)
 					{
-						logicalCore.baseFrequency = pwrInfo[core].mhzLimit;
-						logicalCore.maximumFrequency = pwrInfo[core].mhzLimit;
+						// Not accurate enough, not always mapped to correct core?
+						//logicalCore.baseFrequency = pwrInfo[core].mhzLimit;
+						//logicalCore.maximumFrequency = pwrInfo[core].maxMhz;
 					}
 
 					logicalCore.currentFrequency = pwrInfo[core].currentMhz;
@@ -957,21 +1095,21 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 				}
 
 				// Heterogeneous processor clusters
-				procInfo.coreMasks[CoreTypes::ANY] |= affinityMask;
+				procInfo.coreMasks[static_cast<short>(CoreTypes::ANY)] |= affinityMask;
 
 				// Homogeneous processor clusters
-				procInfo.coreMasks[logicalCore.coreType] |= affinityMask;
+				procInfo.coreMasks[static_cast<short>(logicalCore.coreType)] |= affinityMask;
 
 #ifdef ENABLE_CPU_SETS
-				procInfo.cpuSets[CoreTypes::ANY].push_back(logicalCore.id);
-				procInfo.cpuSets[logicalCore.coreType].push_back(logicalCore.id);
+				procInfo.cpuSets[static_cast<unsigned int>(CoreTypes::ANY)].push_back(logicalCore.id);
+				procInfo.cpuSets[static_cast<unsigned int>(logicalCore.coreType)].push_back(logicalCore.id);
 #else
 				procInfo.cores.push_back(logicalCore);
 #endif
 				//pwrInfo.clear();
 			}
 
-			
+
 
 			// Reset Group Affinity
 			SetThreadGroupAffinity(GetCurrentThread(), &prevGroup, nullptr);
@@ -980,7 +1118,25 @@ inline void GetProcessorInfo(PROCESSOR_INFO& procInfo)
 		// Reset Process Affinity Mask
 		SetThreadAffinityMask(GetCurrentThread(), processAffinityMask);
 	}
-#endif // HYBRIDDETECT_OS_WIN
+#else // HYBRIDDETECT_OS_WIN
+
+#ifdef __APPLE__
+	{
+		size_t len = sizeof(procInfo.numPhysicalCores);
+		sysctlbyname("hw.physicalcpu", &procInfo.numPhysicalCores, &len, NULL, 0);
+		len = sizeof(procInfo.numLogicalCores);
+		sysctlbyname("hw.ncpu", &procInfo.numLogicalCores, &len, NULL, 0);
+
+		bool bHybrid = false;
+		len = sizeof(int);
+		int nperflevels{};
+		sysctlbyname("hw.nperflevels", &nperflevels, &len, NULL, 0);
+		bHybrid = nperflevels > 1;
+
+		procInfo.hybrid = bHybrid;
+	}
+#endif // APPLE
+#endif
 #endif
 	HYBRID_DETECT_TRACE(7, "<<< ");
 }
@@ -1039,9 +1195,9 @@ inline bool AutoPowerThrottling(HANDLE threadHandle)
 
 #ifdef ENABLE_CPU_SETS
 
+#ifdef ENABLE_RUNON
 inline short RunOnCPUSet(PROCESSOR_INFO& procInfo, HANDLE threadHandle, std::vector<ULONG> cpuSet, std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	if (cpuSet.size() > 0)
 	{
 		if (SetThreadSelectedCpuSets(threadHandle, &cpuSet[0], cpuSet.size()))
@@ -1068,12 +1224,33 @@ inline short RunOnCPUSet(PROCESSOR_INFO& procInfo, HANDLE threadHandle, std::vec
 		}
 	}
 
-#endif
 	return -1;
 }
+#else
+inline short RunOnCPUSet(PROCESSOR_INFO& , HANDLE , std::vector<ULONG> , std::vector<ULONG> fallbackSet = {})
+{
+	return -1;
+}
+#endif
 
 // Run A Thread On the Atom or Core Logical Processor Cluster
-inline short RunOn(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const CoreTypes type, const std::vector<ULONG> fallbackSet = {})
+inline short RunOn(
+	PROCESSOR_INFO& 
+#ifdef ENABLE_RUNON
+	procInfo
+#endif
+	, 
+#if defined(ENABLE_RUNON_PRIORITY) || defined(ENABLE_RUNON_MEMORY_PRIORITY) || defined(ENABLE_RUNON_EXECUTION_SPEED) || defined(ENABLE_RUNON)
+	HANDLE threadHandle,
+#else
+	HANDLE,
+#endif
+#if defined(ENABLE_RUNON_PRIORITY) || defined(ENABLE_RUNON_MEMORY_PRIORITY) || defined(ENABLE_RUNON_EXECUTION_SPEED)
+	const CoreTypes type, 
+#else
+	const CoreTypes,
+#endif
+	const std::vector<ULONG> fallbackSet = {})
 {
 #ifdef ENABLE_RUNON_PRIORITY
 	switch (type)
@@ -1121,7 +1298,7 @@ inline short RunOn(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const CoreType
 #endif
 
 #ifdef ENABLE_RUNON
-	//assert(procInfo.coreMasks.size());
+	//HYBRIDDETECT_DEBUG_REQUIRE(procInfo.coreMasks.size());
 
 	if (procInfo.cpuSets.size() > 0)
 	{
@@ -1136,41 +1313,50 @@ inline short RunOn(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const CoreType
 }
 
 // Run The Current Thread On Atom or Core Logical Processor Cluster
+#ifdef ENABLE_RUNON
 inline short RunOn(PROCESSOR_INFO& procInfo, const CoreTypes type, const std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	HANDLE threadHandle = GetCurrentThread();
 	return RunOn(procInfo, threadHandle, type, fallbackSet);
-#else
-	return 0;
-#endif
 }
+#else
+inline short RunOn(PROCESSOR_INFO& , const CoreTypes , const std::vector<ULONG> fallbackSet = {})
+{
+	return 0;
+}
+#endif
 
 // Run A Thread On Any Logical Processor
+#ifdef ENABLE_RUNON
 inline short RunOnAny(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	return RunOn(procInfo, threadHandle, CoreTypes::ANY, fallbackSet);
-#else
-	return 0;
-#endif 
 }
+#else
+inline short RunOnAny(PROCESSOR_INFO& , HANDLE , const std::vector<ULONG> fallbackSet = {})
+{
+	return 0;
+}
+#endif
 
 // Run The Current Thread On Any Logical Processor
+#ifdef ENABLE_RUNON
 inline short RunOnAny(PROCESSOR_INFO& procInfo, const std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	HANDLE threadHandle = GetCurrentThread();
 	return RunOnAny(procInfo, threadHandle, fallbackSet);
-#else
-	return 0;
-#endif
 }
+#else
+inline short RunOnAny(PROCESSOR_INFO& , const std::vector<ULONG> fallbackSet = {})
+{
+	return 0;
+}
+#endif
 
 // Run A Thread On One Logical Processor
+#ifdef ENABLE_RUNON
 inline short RunOnOne(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const short coreID, const std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	bool succeeded = false;
 
 #ifdef _DEBUG
@@ -1196,33 +1382,39 @@ inline short RunOnOne(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const short
 			// Loop while the current thread is not scheduled on a logical processor matching the affinity mask.
 		} while (runningOn != coreID);
 		// Assert In Debug
-		assert(runningOn == coreID);
+		HYBRIDDETECT_DEBUG_REQUIRE(runningOn == coreID);
 		//Where did we land?
 		int finishedOn = GetCurrentProcessorNumber();
 
 		// Did we finish where we wanted?
-		assert(runningOn == finishedOn);
+		HYBRIDDETECT_DEBUG_REQUIRE(runningOn == finishedOn);
 #endif       
 
 		return succeeded;
 	}
 
 	return RunOnCPUSet(procInfo, threadHandle, fallbackSet, procInfo.cpuSets[CoreTypes::ANY]);
-#else
-	return -1;
-#endif
 }
+#else
+inline short RunOnOne(PROCESSOR_INFO& , HANDLE , const short , const std::vector<ULONG> fallbackSet = {})
+{
+	return -1;
+}
+#endif
 
 // Run The Current Thread On One Logical Processor
+#ifdef ENABLE_RUNON
 inline bool RunOnOne(PROCESSOR_INFO& procInfo, const short coreID, const std::vector<ULONG> fallbackSet = {})
 {
-#ifdef ENABLE_RUNON
 	HANDLE threadHandle = GetCurrentThread();
 	return RunOnOne(procInfo, threadHandle, coreID, fallbackSet);
-#else
-	return false;
-#endif
 }
+#else
+inline bool RunOnOne(PROCESSOR_INFO& , const short , const std::vector<ULONG> fallbackSet = {})
+{
+	return false;
+}
+#endif
 
 #else
 
@@ -1238,8 +1430,8 @@ inline short RunOnMask(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const ULON
 
 	ULONG64 threadAffinityMask = mask;
 
-	//assert((systemAffinityMask & threadAffinityMask));
-	//assert((processAffinityMask & threadAffinityMask));
+	//HYBRIDDETECT_DEBUG_REQUIRE((systemAffinityMask & threadAffinityMask));
+	//HYBRIDDETECT_DEBUG_REQUIRE((processAffinityMask & threadAffinityMask));
 
 	// Is the thread-mask allowed in this system/process?
 	if ((systemAffinityMask & threadAffinityMask) && (processAffinityMask & threadAffinityMask))
@@ -1249,8 +1441,8 @@ inline short RunOnMask(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const ULON
 		return 1;
 	}
 
-	//assert(systemAffinityMask & fallbackMask);
-	//assert(processAffinityMask & fallbackMask);
+	//HYBRIDDETECT_DEBUG_REQUIRE(systemAffinityMask & fallbackMask);
+	//HYBRIDDETECT_DEBUG_REQUIRE(processAffinityMask & fallbackMask);
 
 	// Is fall-back thread-mask allowed in this system/process?
 	if ((systemAffinityMask & fallbackMask) && (processAffinityMask & fallbackMask))
@@ -1297,7 +1489,7 @@ inline short RunOn(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const CoreType
 	}
 #endif
 #ifdef ENABLE_RUNON
-	//assert(procInfo.coreMasks.size());
+	//HYBRIDDETECT_DEBUG_REQUIRE(procInfo.coreMasks.size());
 
 	if (procInfo.coreMasks.size())
 	{
@@ -1371,12 +1563,12 @@ inline bool RunOnOne(PROCESSOR_INFO& procInfo, HANDLE threadHandle, const short 
 			// Loop while the current thread is not scheduled on a logical processor matching the affinity mask.
 		} while (runningOn != coreID);
 		// Assert In Debug
-		assert(runningOn == coreID);
+		HYBRIDDETECT_DEBUG_REQUIRE(runningOn == coreID);
 		//Where did we land?
 		int finishedOn = GetCurrentProcessorNumber();
 
 		// Did we finish where we wanted?
-		assert(runningOn == finishedOn);
+		HYBRIDDETECT_DEBUG_REQUIRE(runningOn == finishedOn);
 #endif       
 
 		return succeeded;
