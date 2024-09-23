@@ -384,7 +384,7 @@ typedef struct _PROCESSOR_INFO
 	inline int GetCoreTypeCount(CoreTypes coreType)
 	{
 #ifdef ENABLE_CPU_SETS
-		return (int)cpuSets[(UINT)coreType].size();
+		return (int)cpuSets[(ULONG)coreType].size();
 #else
 		std::bitset<64> bits = coreMasks[coreType];
 
