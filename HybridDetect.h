@@ -1245,10 +1245,10 @@ inline short RunOn(
 #else
 	HANDLE,
 #endif
-#if defined(ENABLE_RUNON_PRIORITY) || defined(ENABLE_RUNON_MEMORY_PRIORITY) || defined(ENABLE_RUNON_EXECUTION_SPEED)
+#if defined(ENABLE_RUNON) || defined(ENABLE_RUNON_PRIORITY) || defined(ENABLE_RUNON_MEMORY_PRIORITY) || defined(ENABLE_RUNON_EXECUTION_SPEED)
 	const CoreTypes type, 
 #else
-	const CoreTypes type,
+	const CoreTypes,
 #endif
 	const std::vector<ULONG> fallbackSet = {})
 {
