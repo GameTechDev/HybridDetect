@@ -1,3 +1,8 @@
+# THIS PROJECT IS ARCHIVED   
+Intel will not provide or guarantee development of or support for this project, including but not limited to, maintenance, bug fixes, new releases or updates.  
+Patches to this project are no longer accepted by Intel.  
+ If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the community, please create your own fork of the project.  
+  
 # Hybrid Detect
 
 Hybrid Detect demonstrates CPU topology detection using multiple intrinsic and OS level APIs. First, we demonstrate usage of CPUID intrinsic to detect information leafs including the new Hybrid leaf offered for the latest Intel processors. Additionally, we use GetLogicalProcessorInformation() and GetLogicalProcessorInformationEX() to demonstrate full topology enumeration including Logical Core & Cache Relationships along with Affinity Masking. Finally we show how to use GetSystemCPUSetInformation() to get valid CPU Identifiers for use with SetThreadSelectedCPUSets() as well as how to read the Efficiency Class and other flags such as the Parked flag for each P-Core & E-Core.
